@@ -92,7 +92,7 @@ $username = 'root';
 $password = '';
 ```
 
-Acesse o projeto no navegador:
+7. Acesse o projeto no navegador:
 ```bash
 http://localhost/opovo-teste-tecnico/
 ```
