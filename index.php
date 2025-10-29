@@ -60,14 +60,20 @@ $books = $stmt->fetchAll();
                                             <i class="bi bi-eye"></i>
                                         </a>
 
-                                        <!-- Delete sem JS externo -->
+                                        <!-- Deletar Livro -->
                                         <form action="delete.php" method="POST" style="display:inline-block;"
                                             onsubmit="return confirm('Tem certeza que deseja excluir o livro <?= addslashes($book['titulo']) ?>?');">
+                                            <input type="hidden" name="_method" value="delete">
                                             <input type="hidden" name="id" value="<?= $book['id'] ?>">
                                             <button type="submit" class="btn btn-outline-danger btn-sm">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
+
+                                        <!-- Editar livro -->
+                                        <a class="btn btn-outline-primary btn-sm" href="update.php?id=<?= $book['id'] ?>">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

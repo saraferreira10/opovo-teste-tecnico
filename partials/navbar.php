@@ -18,7 +18,7 @@
                         <a class="nav-link active" aria-current="page" href="index.php">Livros</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="create_book.php">Cadastrar Livro</a>
+                        <a class="nav-link" href="create.php">Cadastrar Livro</a>
                     </li>
                 </ul>
             </div>
