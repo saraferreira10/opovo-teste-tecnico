@@ -2,8 +2,8 @@
 $host = 'localhost';
 $port = 3306;
 $dbName = 'biblioteca';
-$username = 'root';
-$password = 'Ish@9090';
+$username = 'username';
+$password = 'password';
 
 $dsn = "mysql:host={$host};port={$port};dbname={$dbName};charset=utf8";
 try {

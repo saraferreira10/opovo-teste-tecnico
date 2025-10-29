@@ -1,5 +1,7 @@
 <?php
-require 'database.php';
+require './db/database.php';
+require './utils/helpers.php';
+
 $id = $_GET["id"] ?? null;
 
 if (empty($id)) {

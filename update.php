@@ -1,5 +1,7 @@
 <?php
-require 'database.php';
+require './db/database.php';
+require './utils/helpers.php';
+require './validators/validateBookData.php'; 
 
 $id = $_GET['id'] ?? null;
 
@@ -8,7 +10,6 @@ if (!$id) {
     exit;
 }
 
-// Buscar livro
 $sql = 'SELECT * FROM livros WHERE id = :id';
 $stmt = $pdo->prepare($sql);
 $stmt->execute(['id' => $id]);
@@ -19,25 +20,35 @@ if (!$book) {
     exit;
 }
 
-// Atualizar livro
+$errors = [];
+$old = $book; 
+
 if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST["_method"]) && $_POST["_method"] === "put") {
-    $titulo = htmlspecialchars($_POST["titulo"]);
-    $autor = htmlspecialchars($_POST["autor"]);
-    $ano = intval($_POST["ano_publicacao"]);
-    $genero = htmlspecialchars($_POST["genero"]);
+    $old = [
+        'titulo' => htmlspecialchars(trim($_POST["titulo"])),
+        'autor' => htmlspecialchars(trim($_POST["autor"])),
+        'ano_publicacao' => intval($_POST["ano_publicacao"]),
+        'genero' => htmlspecialchars(trim($_POST["genero"]))
+    ];
 
-    $sql = "UPDATE livros SET titulo = :titulo, autor = :autor, ano_publicacao = :ano, genero = :genero WHERE id = :id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        'titulo' => $titulo,
-        'autor' => $autor,
-        'ano' => $ano,
-        'genero' => $genero,
-        'id' => $id
-    ]);
+    $errors = validateBook($old);
 
-    header("Location: index.php");
-    exit;
+    if (empty($errors)) {
+        $sql = "UPDATE livros 
+                SET titulo = :titulo, autor = :autor, ano_publicacao = :ano, genero = :genero 
+                WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            'titulo' => $old['titulo'],
+            'autor' => $old['autor'],
+            'ano' => $old['ano_publicacao'],
+            'genero' => $old['genero'],
+            'id' => $id
+        ]);
+
+        header("Location: index.php?updated=1");
+        exit;
+    }
 }
 ?>
 
@@ -53,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST["_method"]) && $_POST[
 </head>
 
 <body class="bg-light">
-    <?php include 'partials/navbar.php'; ?>
+    <?php loadPartial("navbar") ?>
 
     <div class="container py-5">
         <div class="text-center mb-5">
@@ -66,39 +77,62 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST["_method"]) && $_POST[
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
                 <div class="card border-0 shadow-lg rounded-4 p-4">
-                    <form method="POST">
+
+                    <?php if (!empty($errors)): ?>
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                <?php foreach ($errors as $error): ?>
+                                    <li><?= htmlspecialchars($error) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="POST" novalidate>
                         <input type="hidden" name="_method" value="put">
-                        <input type="hidden" name="id" value="<?= $book['id'] ?>">
+                        <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Título</label>
-                            <input type="text" name="titulo" class="form-control form-control-lg"
-                                value="<?= htmlspecialchars($book['titulo']) ?>" required>
+                            <input type="text"
+                                   name="titulo"
+                                   class="form-control form-control-lg <?= isset($errors['titulo']) ? 'is-invalid' : '' ?>"
+                                   value="<?= htmlspecialchars($old['titulo'] ?? '') ?>"
+                                   required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Autor</label>
-                            <input type="text" name="autor" class="form-control form-control-lg"
-                                value="<?= htmlspecialchars($book['autor']) ?>" required>
+                            <input type="text"
+                                   name="autor"
+                                   class="form-control form-control-lg <?= isset($errors['autor']) ? 'is-invalid' : '' ?>"
+                                   value="<?= htmlspecialchars($old['autor'] ?? '') ?>"
+                                   required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Ano de Publicação</label>
-                            <input type="number" name="ano_publicacao" class="form-control form-control-lg"
-                                value="<?= htmlspecialchars($book['ano_publicacao']) ?>" required>
+                            <input type="number"
+                                   name="ano_publicacao"
+                                   class="form-control form-control-lg <?= isset($errors['ano_publicacao']) ? 'is-invalid' : '' ?>"
+                                   value="<?= htmlspecialchars($old['ano_publicacao'] ?? '') ?>"
+                                   required>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Gênero</label>
-                            <input type="text" name="genero" class="form-control form-control-lg"
-                                value="<?= htmlspecialchars($book['genero']) ?>" required>
+                            <input type="text"
+                                   name="genero"
+                                   class="form-control form-control-lg <?= isset($errors['genero']) ? 'is-invalid' : '' ?>"
+                                   value="<?= htmlspecialchars($old['genero'] ?? '') ?>"
+                                   required>
                         </div>
 
                         <div class="d-flex justify-content-center gap-3">
                             <button type="submit" class="btn btn-primary btn-lg px-4">
                                 <i class="bi bi-check-circle me-2"></i>Salvar
                             </button>
-                            <a href="index.php" class="btn btn-outline-primary btn-lg px-4">
+                            <a href="index.php" class="btn btn-outline-secondary btn-lg px-4">
                                 <i class="bi bi-arrow-left-circle me-2"></i>Voltar
                             </a>
                         </div>
@@ -108,9 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST["_method"]) && $_POST[
         </div>
     </div>
 
-    <?php include 'partials/footer.php'; ?>
+    <?php loadPartial("footer") ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

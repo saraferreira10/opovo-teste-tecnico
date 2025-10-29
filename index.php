@@ -1,5 +1,6 @@
 <?php
-require 'database.php';
+require './db/database.php';
+require './utils/helpers.php';
 
 $stmt = $pdo->prepare('SELECT * FROM livros');
 $stmt->execute();
@@ -18,7 +19,7 @@ $books = $stmt->fetchAll();
 </head>
 
 <body class="bg-light">
-    <?php include 'partials/navbar.php'; ?>
+    <?php loadPartial("navbar") ?>
 
     <div class="container py-5">
         <div class="text-center mb-5">
@@ -92,7 +93,7 @@ $books = $stmt->fetchAll();
         </div>
     </div>
 
-    <?php include 'partials/footer.php'; ?>
+    <?php loadPartial("footer") ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
